@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Trivia Challenge</title>
+    <style>
+        /* Basic Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            /* Subtle tennis court SVG background */
+            background-color: #E8F5E9; /* Light green fallback */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23A5D6A7' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            border: 5px solid #4CAF50; /* Tennis court green border */
+        }
+
+        h1 {
+            color: #2E7D32; /* Darker green */
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        #difficulty-selector {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .difficulty-btn {
+            padding: 10px 15px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            transition: background-color 0.3s, border-color 0.3s;
+            font-weight: bold;
+        }
+
+        .difficulty-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .difficulty-btn.active {
+            background-color: #D4FF33; /* Tennis ball yellow */
+            border-color: #8BC34A; /* Slightly darker green */
+            color: #333;
+        }
+
+        #question-area {
+            margin-bottom: 20px;
+        }
+
+        #question-text {
+            font-size: 1.4em;
+            margin-bottom: 25px;
+            color: #333;
+            min-height: 60px; /* Prevent layout shift */
+        }
+
+        #answer-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .answer-btn {
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: 2px solid #4CAF50; /* Green border */
+            border-radius: 8px;
+            background-color: #ffffff;
+            color: #4CAF50;
+            transition: background-color 0.3s, color 0.3s;
+            width: 100%;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background-color: #E8F5E9; /* Light green hover */
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .answer-btn.correct {
+            background-color: #8BC34A; /* Correct green */
+            color: white;
+            border-color: #689F38;
+        }
+
+        .answer-btn.incorrect {
+            background-color: #FF7043; /* Incorrect orange/red */
+            color: white;
+            border-color: #E64A19;
+        }
+
+
+        #feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px; /* Prevent layout shift */
+        }
+
+        #progress, #score {
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        #results-screen {
+            display: none; /* Hidden initially */
+            text-align: left;
+        }
+
+        #results-screen h2 {
+            text-align: center;
+            color: #2E7D32;
+            margin-bottom: 20px;
+        }
+
+        #final-score {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #D4FF33; /* Tennis ball yellow */
+            background-color: #4CAF50;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        #results-details {
+            margin-bottom: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px; /* For scrollbar */
+        }
+
+        .result-item {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+        .result-item p {
+            margin-bottom: 5px;
+        }
+
+        .result-item .user-answer.correct {
+            color: #388E3C; /* Darker Green */
+            font-weight: bold;
+        }
+        .result-item .user-answer.incorrect {
+            color: #D32F2F; /* Darker Red */
+            font-weight: bold;
+            text-decoration: line-through;
+        }
+        .result-item .correct-answer-text {
+             color: #388E3C;
+             font-weight: bold;
+        }
+
+
+        #play-again-button {
+            display: block;
+            margin: 20px auto 0 auto;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #FFEB3B; /* Yellow */
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #play-again-button:hover {
+            background-color: #FDD835; /* Darker Yellow */
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none; /* Initially hidden */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Tennis Trivia Challenge</h1>
+
+        <div id="difficulty-selector">
+            <button class="difficulty-btn active" id="easy-btn" onclick="changeDifficulty('easy')">Easy</button>
+            <button class="difficulty-btn" id="medium-btn" onclick="changeDifficulty('medium')">Medium</button>
+            <button class="difficulty-btn" id="hard-btn" onclick="changeDifficulty('hard')">Hard</button>
+        </div>
+
+        <div id="game-content">
+            <div id="question-area">
+                <p id="question-text">Loading question...</p>
+                <div id="answer-options">
+                    </div>
+            </div>
+
+            <p id="feedback"></p>
+            <p id="progress">Question 1 of 10</p>
+            <p id="score">Score: 0</p>
+        </div>
+
+        <div id="results-screen">
+            <h2>Game Over!</h2>
+            <p id="final-score">Your Score: 0 / 10</p>
+            <h3>Review:</h3>
+            <div id="results-details">
+                </div>
+            <button id="play-again-button" onclick="playAgain()">Play Again?</button>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <script>
+        const questions = {
+            easy: [
+                { question: "How many points are needed to win a standard game in tennis (assuming no deuce)?", options: ["2", "3", "4", "5"], answer: "4" },
+                { question: "What is the name of the surface used at Wimbledon?", options: ["Clay", "Hard Court", "Grass", "Carpet"], answer: "Grass" },
+                { question: "Which shot is typically used to start a point?", options: ["Volley", "Serve", "Smash", "Lob"], answer: "Serve" },
+                { question: "What does 'love' mean in tennis scoring?", options: ["Zero", "Fifteen", "Thirty", "Advantage"], answer: "Zero" },
+                { question: "A 'let' occurs primarily during which shot?", options: ["Forehand", "Backhand", "Serve", "Volley"], answer: "Serve" },
+                { question: "What fruit traditionally sits atop the men's Wimbledon trophy?", options: ["Strawberry", "Apple", "Pineapple", "Grapes"], answer: "Pineapple" },
+                { question: "How many games must a player win to win a set (typically, without a tie-break)?", options: ["4", "5", "6", "7"], answer: "6" },
+                 { question: "What is it called when a player wins a point immediately after their serve touches the net but lands in?", options: ["Fault", "Let", "Ace", "Net Cord Winner"], answer: "Net Cord Winner" },
+            ],
+            medium: [
+                { question: "Who is often called the 'King of Clay'?", options: ["Roger Federer", "Novak Djokovic", "Rafael Nadal", "Pete Sampras"], answer: "Rafael Nadal" },
+                { question: "Winning all four major tournaments in the same calendar year is called what?", options: ["Career Grand Slam", "Golden Slam", "Calendar Grand Slam", "Super Slam"], answer: "Calendar Grand Slam" },
+                { question: "What electronic system is used to review line calls in major tournaments?", options: ["Eagle Eye", "Hawk-Eye", "Owl Vision", "Falcon View"], answer: "Hawk-Eye" },
+                { question: "Which female player holds the record for the most Grand Slam singles titles in the Open Era?", options: ["Steffi Graf", "Serena Williams", "Martina Navratilova", "Margaret Court"], answer: "Serena Williams" },
+                { question: "What score is known as 'deuce'?", options: ["15-15", "30-30", "40-40", "Game"], answer: "40-40" },
+                { question: "Which Grand Slam tournament is played on blue hard courts?", options: ["Wimbledon", "French Open", "US Open", "Australian Open"], answer: "Australian Open" },
+                { question: "What is the term for hitting the ball before it bounces, usually near the net?", options: ["Groundstroke", "Serve", "Smash", "Volley"], answer: "Volley" },
+                 { question: "In which year were yellow tennis balls first used at Wimbledon?", options: ["1976", "1982", "1986", "1990"], answer: "1986" },
+            ],
+            hard: [
+                { question: "Who was the first unseeded man to win Wimbledon in the Open Era?", options: ["Boris Becker", "Goran Ivanišević", "Michael Stich", "Richard Krajicek"], answer: "Goran Ivanišević" },
+                { question: "What are the dimensions (length x width) of a singles tennis court?", options: ["78 ft x 27 ft", "78 ft x 36 ft", "75 ft x 25 ft", "80 ft x 30 ft"], answer: "78 ft x 27 ft" },
+                { question: "Which player completed the 'Boxed Set' (winning all 4 Grand Slams, Olympic Gold, and Year-End Championship)?", options: ["Serena Williams", "Steffi Graf", "Andre Agassi", "Both B and C"], answer: "Both B and C" },
+                { question: "What is the minimum number of points needed to win a standard 7-point tie-break?", options: ["6", "7", "8", "10"], answer: "7" },
+                { question: "Who hit the fastest recorded serve in professional tennis history (recognized by ATP)?", options: ["John Isner", "Andy Roddick", "Sam Groth", "Milos Raonic"], answer: "Sam Groth" }, // Note: Albano Olivetti hit faster but not in ATP main draw. Groth's is often cited for ATP Challenger. Adjust if needed.
+                { question: "In a standard match (best of 3 sets), what is the maximum number of sets that can be played?", options: ["2", "3", "4", "5"], answer: "3" },
+                { question: "What was the original name of the French Open tournament?", options: ["Les Internationaux de France", "Championnat de France", "Tournoi de Roland Garros", "French Championships"], answer: "Championnat de France" },
+                 { question: "Which siblings have both reached World No. 1 in singles?", options: ["Williams", "Bryan", "Safin/Safina", "Murray"], answer: "Safin/Safina" }, // Marat Safin & Dinara Safina
+            ]
+        };
+
+        // DOM Elements
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        const questionTextEl = document.getElementById('question-text');
+        const answerOptionsEl = document.getElementById('answer-options');
+        const feedbackEl = document.getElementById('feedback');
+        const progressEl = document.getElementById('progress');
+        const scoreEl = document.getElementById('score');
+        const gameContentEl = document.getElementById('game-content');
+        const resultsScreenEl = document.getElementById('results-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const resultsDetailsEl = document.getElementById('results-details');
+        const confettiCanvas = document.getElementById('confetti-canvas');
+
+        // Game State
+        let currentDifficulty = 'easy';
+        let score = 0;
+        let questionsAnswered = 0;
+        const maxQuestions = 10;
+        let gameHistory = []; // Stores { question, options, userAnswer, correctAnswer, isCorrect }
+        let currentQuestion = null;
+        let askedQuestionIndices = { easy: [], medium: [], hard: [] }; // Track asked indices per difficulty *within this game*
+
+
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            difficultyButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.id === `${difficulty}-btn`) {
+                    btn.classList.add('active');
+                }
+            });
+             // No game reset needed here, just changes the pool for the *next* question
+        }
+
+        function changeDifficulty(newDifficulty) {
+            if (newDifficulty !== currentDifficulty) {
+                 console.log(`Difficulty changed to ${newDifficulty}`);
+                 selectDifficulty(newDifficulty);
+                 // The next call to loadQuestion will use the new difficulty
+            }
+        }
+
+        function getRandomQuestion() {
+            const availableQuestions = questions[currentDifficulty];
+            let availableIndices = [];
+            for (let i = 0; i < availableQuestions.length; i++) {
+                if (!askedQuestionIndices[currentDifficulty].includes(i)) {
+                    availableIndices.push(i);
+                }
+            }
+
+            // If we run out of unique questions in this difficulty for this round,
+            // reset the asked list *for this difficulty only* and pick again.
+            // This allows reusing questions if needed to reach 10 total.
+            if (availableIndices.length === 0) {
+                 console.warn(`Re-using questions for difficulty: ${currentDifficulty}`);
+                 askedQuestionIndices[currentDifficulty] = [];
+                 availableIndices = Array.from(Array(availableQuestions.length).keys()); // All indices 0 to N-1
+                 // Still possible to get an empty list if difficulty has 0 questions
+                 if (availableIndices.length === 0) return null;
+            }
+
+            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            askedQuestionIndices[currentDifficulty].push(randomIndex); // Mark as asked for this round
+            return availableQuestions[randomIndex];
+        }
+
+
+        function loadQuestion() {
+            if (questionsAnswered >= maxQuestions) {
+                endGame();
+                return;
+            }
+
+            currentQuestion = getRandomQuestion();
+
+            if (!currentQuestion) {
+                 // Handle case where a difficulty level might have no questions
+                 feedbackEl.textContent = `No questions available for ${currentDifficulty} difficulty. Please try another.`;
+                 feedbackEl.style.color = 'red';
+                 return; // Or switch difficulty automatically? For now, just inform.
+            }
+
+
+            feedbackEl.textContent = ''; // Clear previous feedback
+            questionTextEl.textContent = currentQuestion.question;
+            answerOptionsEl.innerHTML = ''; // Clear old options
+
+            // Shuffle answer options for variety
+            const shuffledOptions = [...currentQuestion.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('answer-btn');
+                button.onclick = () => selectAnswer(option, button);
+                answerOptionsEl.appendChild(button);
+            });
+
+            progressEl.textContent = `Question ${questionsAnswered + 1} of ${maxQuestions}`;
+            scoreEl.textContent = `Score: ${score}`;
+        }
+
+        function selectAnswer(selectedOption, button) {
+            // Disable all buttons after an answer is chosen
+            const buttons = answerOptionsEl.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            const correctAnswer = currentQuestion.answer;
+            const isCorrect = selectedOption === correctAnswer;
+
+            if (isCorrect) {
+                score++;
+                feedbackEl.textContent = 'Correct!';
+                feedbackEl.style.color = '#388E3C'; // Darker green
+                button.classList.add('correct');
+            } else {
+                feedbackEl.textContent = `Incorrect. The correct answer was: ${correctAnswer}`;
+                feedbackEl.style.color = '#D32F2F'; // Darker red
+                button.classList.add('incorrect');
+                // Highlight the correct answer as well
+                buttons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            // Record history
+            gameHistory.push({
+                question: currentQuestion.question,
+                options: currentQuestion.options, // Store original options if needed
+                userAnswer: selectedOption,
+                correctAnswer: correctAnswer,
+                isCorrect: isCorrect
+            });
+
+            questionsAnswered++;
+            scoreEl.textContent = `Score: ${score}`; // Update score display immediately
+
+            // Wait a moment, then load next question or end game
+            setTimeout(() => {
+                loadQuestion();
+            }, 1500); // 1.5 second delay to show feedback
+        }
+
+        function endGame() {
+            gameContentEl.style.display = 'none'; // Hide game area
+            resultsScreenEl.style.display = 'block'; // Show results area
+            finalScoreEl.textContent = `Your Final Score: ${score} / ${maxQuestions}`;
+            displayResults();
+            startConfetti(); // Start confetti!
+        }
+
+        function displayResults() {
+            resultsDetailsEl.innerHTML = ''; // Clear previous results
+            gameHistory.forEach((result, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('result-item');
+
+                let answerHTML = `<span class="user-answer ${result.isCorrect ? 'correct' : 'incorrect'}">${result.userAnswer}</span>`;
+                if (!result.isCorrect) {
+                   answerHTML += ` (Correct: <span class="correct-answer-text">${result.correctAnswer}</span>)`;
+                } else {
+                    answerHTML += ` (Correct!)`;
+                }
+
+
+                resultDiv.innerHTML = `
+                    <p><strong>Q${index + 1}:</strong> ${result.question}</p>
+                    <p>Your Answer: ${answerHTML}</p>
+                `;
+                resultsDetailsEl.appendChild(resultDiv);
+            });
+        }
+
+        function playAgain() {
+            // Reset game state
+            score = 0;
+            questionsAnswered = 0;
+            gameHistory = [];
+             askedQuestionIndices = { easy: [], medium: [], hard: [] }; // Reset asked questions for the new game
+
+            // Reset UI
+            resultsScreenEl.style.display = 'none';
+            gameContentEl.style.display = 'block';
+            feedbackEl.textContent = '';
+            stopConfetti(); // Stop confetti
+
+            // Select default difficulty visually (doesn't change internal state unless needed)
+            selectDifficulty(currentDifficulty); // Re-apply active class based on last selected
+
+            loadQuestion(); // Start the new game
+        }
+
+
+        // --- Confetti ---
+        // Simple Vanilla JS Confetti - Adapted from various sources
+        const ctx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+        let confettiAnimationId;
+
+        function startConfetti() {
+            confettiCanvas.style.display = 'block';
+            confettiParticles = []; // Reset particles
+            const numberOfParticles = 150;
+            const colors = ['#D4FF33', '#4CAF50', '#FFFFFF', '#FFEB3B', '#8BC34A'];
+
+            for (let i = 0; i < numberOfParticles; i++) {
+                confettiParticles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height, // Start above screen
+                    radius: Math.random() * 5 + 2, // Size
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    velocityX: Math.random() * 6 - 3, // Horizontal speed
+                    velocityY: Math.random() * 5 + 2, // Vertical speed (gravity)
+                    opacity: Math.random() * 0.5 + 0.5, // Opacity
+                    angle: Math.random() * Math.PI * 2,
+                    spin: Math.random() * 0.1 - 0.05
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+             // Update canvas size on resize, potentially needed if window resizes during confetti
+             confettiCanvas.width = window.innerWidth;
+             confettiCanvas.height = window.innerHeight;
+
+
+            confettiParticles.forEach((p, index) => {
+                p.y += p.velocityY;
+                p.x += p.velocityX;
+                p.angle += p.spin;
+
+                // Reset particle if it goes off screen vertically
+                 if (p.y > confettiCanvas.height + p.radius) {
+                     // Reset particle to top with some randomness
+                      p.x = Math.random() * confettiCanvas.width;
+                      p.y = -p.radius * 2; // Start just above screen
+                      p.velocityX = Math.random() * 6 - 3;
+                      p.velocityY = Math.random() * 5 + 2; // Ensure it falls down
+                 }
+
+                // Handle horizontal wrap-around or disappearance
+                if (p.x > confettiCanvas.width + p.radius) p.x = -p.radius;
+                if (p.x < -p.radius) p.x = confettiCanvas.width + p.radius;
+
+
+                ctx.beginPath();
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.opacity;
+                // Draw simple rectangle confetti piece rotated
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.fillRect(-p.radius, -p.radius / 2, p.radius * 2, p.radius);
+                ctx.restore();
+
+            });
+
+            // Continue animation only if results screen is visible
+            if (resultsScreenEl.style.display === 'block') {
+                confettiAnimationId = requestAnimationFrame(animateConfetti);
+            } else {
+                 stopConfetti(); // Ensure it stops if screen changes
+            }
+        }
+
+        function stopConfetti() {
+            cancelAnimationFrame(confettiAnimationId);
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            confettiCanvas.style.display = 'none';
+        }
+
+        // Initial Setup on Load
+        window.onload = () => {
+            selectDifficulty('easy'); // Set initial visual state
+            loadQuestion(); // Load the first question
+             // Ensure canvas matches window size initially
+             confettiCanvas.width = window.innerWidth;
+             confettiCanvas.height = window.innerHeight;
+        };
+         // Adjust canvas on resize
+         window.onresize = () => {
+             confettiCanvas.width = window.innerWidth;
+             confettiCanvas.height = window.innerHeight;
+         };
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+.my_special_text {
+    font-size: 50px !important;
+    color: rgb(59, 110, 153) !important;
+    font-family: 'Times New Roman', Times, serif !important;
+}
+
+.my_email_text {
+    text-decoration: underline;
+    font-size: 20px !important;
+    color: rgb(59, 110, 153) !important;
+}
+
+.my_body_text {
+    font-family: 'Times New Roman', Times, serif !important;
+}
+
+.my_background_color {
+    background-color:steelblue !important;
+}
+
+.subheading {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: large;
+}
+
+.section_headings {
+    font-family:'Times New Roman', Times, serif !important;
+    font-weight: bold !important;
+    color:rgb(51, 51, 51);
+}
+
+.position {
+    color: rgb(75, 75, 75);
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.dates {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: large;
+    color:rgb(51, 51, 51) !important;
+}
+
+.description {
+    font-family: 'Times New Roman', Times, serif !important;
+}
